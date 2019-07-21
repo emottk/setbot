@@ -20,5 +20,3 @@ class Score(db.Model):
 
 	def __repr__(self):
 		return '<Score {}>'.format(self.value)
-
-
