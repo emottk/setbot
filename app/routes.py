@@ -14,7 +14,7 @@ def is_request_valid(request):
 	return is_token_valid and is_team_id_valid
 
 
-@app.route('/setscore', methods=['POST'])
+@app.route('/set_score', methods=['POST'])
 def set_score():
 	if not is_request_valid(request):
 		abort(400)
@@ -36,7 +36,7 @@ def set_score():
 	except ValueError:
 		return jsonify(
 			response_type='in_channel',
-			text="please input your score in a code block using backticks, in set score form ex: `0 hours 00 minutes and 0.00 seconds`")
+			text="*Uh oh*, I didn't catch that! Please input your score in a code block using backticks, in set score form ex: `0 hours 00 minutes and 0.00 seconds`")
  
 	score = Score(orig_input=orig_input, user=user, value=value)
 	db.session.add(score)
@@ -55,8 +55,14 @@ def past_scores():
 	user_id = request.form["user_id"]
 	return_text = ''
 	user = User.query.filter_by(slack_userid=user_id).first()
-	scores = user.set_scores.all()
-	timezone = pytz.timezone('America/New_York')
+
+	try:
+		scores = user.set_scores.all()
+	except:
+		return jsonify(
+			response_type='in_channel',
+			text="You don't have any scores yet! Add one by using `*/set_score*`!"
+		)
 
 	for val in scores:
 		return_text += f'{val.value.strftime("`%H hours %M minutes and %S.%f seconds`")} on *{val.timestamp.strftime("%c")}*\n'
