@@ -4,6 +4,7 @@ from app import app, db
 from app.models import User, Score
 from flask import abort, Flask, jsonify, request
 from datetime import datetime
+import random
 
 
 def is_request_valid(request):
@@ -12,6 +13,11 @@ def is_request_valid(request):
 
 	return is_token_valid and is_team_id_valid
 
+#def check_score_input(score):
+	#try:
+		#value = datetime.strptime(score, "%H hours %M minutes and %S.%f s\
+#econds`").time()
+#	except Exception as e:
 
 @app.route('/set', methods=['POST'])
 def set_score():
@@ -62,14 +68,13 @@ def set_score():
 				response_type='in_channel',
 				text="*Uh oh*, I didn't catch that! Please input your score in a code block using backticks, in set score form ex: `0 hours 00 minutes and 0.00 seconds`"
 				)
- 
 		score = Score(orig_input=f'`{input_value[1]}', user=user, value=value)
 		db.session.add(score)
 		db.session.commit()
-
+		congrats = ["Good job!", "Well done!", "Very impressive.", "Something something blind dog sunshine something."]
 		return jsonify(
 			response_type='in_channel',
-			text=f'Your time `{input_value[1]} has been saved! Good job today!',
+			text=f'Thanks *{user.slack_username}* - your time `{input_value[1]} has been saved. {random.choice(congrats)}',
 		)
 	
 	if params[0] == "past_scores":
@@ -94,6 +99,7 @@ def set_score():
 			response_type='in_channel',
 			text=f'Here are your past scores!\n{return_text}',
 			)
+
 	if params[0] == "compare_scores":
 		if not params[1]:
 			return jsonify(
@@ -110,21 +116,34 @@ def set_score():
 				text="*Oh no!* Either that's not a valid username, or that user hasn't played yet! Try again."
 				)
 		compare_user_scores = compare_user.set_scores.all()
-		print(compare_user_scores)
+		#user_df = pd.read_sql('SELECT * FROM User', db.session.bind)
+		#scores_df = pd.read_sql('SELECT * FROM Score', db.session.bind)
+		#merge_df = pd.merge(df, df1, left_on='id', right_on='user_id')
+		#print(compare_user_scores)
 		return jsonify(
 			type='section',
 			response_type='in_channel',
 			text=f'{compare_user.slack_userid, compare_user.slack_username}'
 			)
+
+
 	if params[0] == "today":
 		todays_datetime = datetime(datetime.today().year, datetime.today().month, datetime.today().day)
 		scores = Score.query.filter(Score.timestamp >= todays_datetime).order_by(Score.value).all()
-		winner = scores.pop(0)
-		return_text = f'*{winner.user.slack_username}:*   {winner.orig_input} \U0001F451 \n'
-		for s in scores:
-			return_text += f'*{s.user.slack_username}:*   {s.orig_input}\n'
-		return jsonify(
-			type='section',
-			response_type='in_channel',
-			text=f'So far today the scores are ~ \n\n {return_text}'
-			)
+		if scores:
+			winner = scores.pop(0)
+			return_text = f'*{winner.user.slack_username}:*   {winner.orig_input} \U0001F451 \n'
+			print(return_text)
+			for s in scores:
+				return_text += f'*{s.user.slack_username}:*   {s.orig_input}\n'
+			return jsonify(
+				type='section',
+				response_type='in_channel',
+				text=f'So far today the scores are ~ \n\n {return_text}'
+			       	)
+		else:
+			return jsonify(
+				type='section',
+				response_type='in_channel',
+				text='No scores have been recorded yet today! Input your score using `/set score`.'
+				)
