@@ -33,21 +33,21 @@ def set_score():
 		params = text_input.split()
 	else:
 		return jsonify(
-			response_type='in_channel',
+			response_type='ephermal',
 			type='section',
 			text="I didn't catch that! Type 'help' for a list of appropriate commands"
 			)
 
 	if params[0] not in commands:
 		return jsonify(
-                        response_type='in_channel',
+                        response_type='ephemeral',
                         type='section',
                         text="I didn't catch that! Type 'help' for a list of appropriate commands"
                         )
 
 	if params[0] == "help":
 		return jsonify(
-			response_type='in_channel',
+			response_type='ephemeral',
 			text="Here are some commands you can try:\n *score* [set score format including backticks and hours]\n *past_scores*\n *compare_scores* [slack username]\n *today*"
 			)
 
@@ -65,7 +65,7 @@ def set_score():
 			value = datetime.strptime(input_value[1], "%H hours %M minutes and %S.%f seconds`").time()
 		except Exception as e:
 			return jsonify(
-				response_type='in_channel',
+				response_type='ephemeral',
 				text="*Uh oh*, I didn't catch that! Please input your score in a code block using backticks, in set score form ex: `0 hours 00 minutes and 0.00 seconds`"
 				)
 		score = Score(orig_input=f'`{input_value[1]}', user=user, value=value)
@@ -73,7 +73,7 @@ def set_score():
 		db.session.commit()
 		congrats = ["Good job!", "Well done!", "Very impressive.", "Something something blind dog sunshine something."]
 		return jsonify(
-			response_type='in_channel',
+			response_type='ephemeral',
 			text=f'Thanks *{user.slack_username}* - your time `{input_value[1]} has been saved. {random.choice(congrats)}',
 		)
 	
@@ -84,7 +84,7 @@ def set_score():
 			print(scores)
 		except:
 			return jsonify(
-				response_type='in_channel',
+				response_type='ephemeral',
 				text="You don't have any scores yet! Add one by using `*/set_score*`!"
 				)
 
@@ -96,7 +96,7 @@ def set_score():
 
 		return jsonify(
 			type='section',
-			response_type='in_channel',
+			response_type='ephemeral',
 			text=f'Here are your past scores!\n{return_text}',
 			)
 
@@ -104,7 +104,7 @@ def set_score():
 		if not params[1]:
 			return jsonify(
 				type='section',
-				response_type='in_channel',
+				response_type='ephemeral',
 				text="*Oops!* Looks like you didn't tell me who you'd like to compare yourself to. Try `compare_scores` followed by `<slack username>`"
 				)
 		compare_username = params[1]
@@ -112,7 +112,7 @@ def set_score():
 		if not compare_user:
 			return jsonify(
 				type='section',
-				response_type='in_channel',
+				response_type='ephemeral',
 				text="*Oh no!* Either that's not a valid username, or that user hasn't played yet! Try again."
 				)
 		compare_user_scores = compare_user.set_scores.all()
@@ -143,7 +143,7 @@ def set_score():
 			       	)
 		else:
 			return jsonify(
-				type='section',
+				type='ephemeral',
 				response_type='in_channel',
 				text='No scores have been recorded yet today! Input your score using `/set score`.'
 				)
