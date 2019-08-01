@@ -73,8 +73,8 @@ def set_score():
 		db.session.commit()
 		congrats = ["Good job!", "Well done!", "Very impressive.", "Something something blind dog sunshine something."]
 		return jsonify(
-			response_type='ephemeral',
-			text=f'Thanks *{user.slack_username}* - your time `{input_value[1]} has been saved. {random.choice(congrats)}',
+			response_type='in_channel',
+			text=f'Thanks *{user.slack_username}* - your time has been saved. {random.choice(congrats)}',
 		)
 	
 	if params[0] == "past_scores":
