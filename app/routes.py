@@ -74,7 +74,7 @@ def set_score():
 		congrats = ["Good job!", "Well done!", "Very impressive.", "Something something blind dog sunshine something."]
 		return jsonify(
 			response_type='in_channel',
-			text=f'Thanks *{user.slack_username}* - your time has been saved. {random.choice(congrats)}',
+			text=f'Thanks *{user.slack_username}*! {random.choice(congrats)}',
 		)
 	
 	if params[0] == "past_scores":
