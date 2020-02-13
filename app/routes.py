@@ -24,7 +24,7 @@ def set_score():
 	if not is_request_valid(request):
 		abort(400)
 
-	commands = ["help", "score", "past_scores", "compare_scores", "today"]
+	commands = ["help", "score", "past_scores", "compare_scores", "today", "my_best"]
 	user_id = request.form["user_id"]
 	user_name = request.form["user_name"]
 	text_input = request.form["text"]
@@ -126,6 +126,24 @@ def set_score():
 			text=f'{compare_user.slack_userid, compare_user.slack_username}'
 			)
 
+	if params[0] == "my_best":
+		scores = user.set_scores.order_by(Score.value).all()
+		if scores:
+			best_time = scores.pop(0)
+			return_text = f"*{best_time.timestamp.strftime('%c')}* - {best_time.orig_input} \U0001F451 \n"
+			for s in scores[1:5]:
+				return_text += f"*{s.timestamp.strftime('%c')}* - {s.orig_input}\n"
+			return jsonify(
+				type="section",
+				response_type="in_channel",
+				text=f"Your best scores at set are ~ \n\n {return_text}",
+			)
+		else:
+			return jsonify(
+				type="ephemeral",
+				response_type="in_channel",
+				text="No scores found for you. Input your score using `/set score`.",
+			)
 
 	if params[0] == "today":
 		todays_datetime = datetime(datetime.today().year, datetime.today().month, datetime.today().day)
