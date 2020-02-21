@@ -4,6 +4,7 @@ from app import app, db
 from app.models import User, Score
 from flask import abort, Flask, jsonify, request
 from datetime import datetime
+from sqlalchemy.sql.functions import min
 import random
 
 
@@ -24,7 +25,8 @@ def set_score():
 	if not is_request_valid(request):
 		abort(400)
 
-	commands = ["help", "score", "past_scores", "compare_scores", "today", "my_best"]
+	commands = ["help", "score", "past_scores", "compare_scores", "today",
+             "my_best", "top10", "leaderboard"]
 	user_id = request.form["user_id"]
 	user_name = request.form["user_name"]
 	text_input = request.form["text"]
@@ -135,14 +137,52 @@ def set_score():
 				return_text += f"*{s.timestamp.strftime('%c')}* - {s.orig_input}\n"
 			return jsonify(
 				type="section",
-				response_type="in_channel",
+				response_type="ephemeral",
 				text=f"Your best scores at set are ~ \n\n {return_text}",
 			)
 		else:
 			return jsonify(
-				type="ephemeral",
+				type="section",
 				response_type="in_channel",
 				text="No scores found for you. Input your score using `/set score`.",
+			)
+
+	if params[0] == "top10":
+		scores = Score.query.order_by(Score.value).all()
+		if scores:
+			best_time = scores.pop(0)
+			return_text = f"*{best_time.timestamp.strftime('%c')}* - {best_time.user.slack_username} - {best_time.orig_input} \U0001F451 \n"
+			for s in scores[0:9]:
+				return_text += f"*{s.timestamp.strftime('%c')}* - {s.user.slack_username} - {s.orig_input}\n"
+			return jsonify(
+				type="section",
+				response_type="ephemeral",
+				text=f"Top 10 overall scores are ~ \n\n {return_text}",
+			)
+		else:
+			return jsonify(
+				type="section",
+				response_type="ephemeral",
+				text="No scores found yet. Input your score using `/set score`.",
+			)
+
+	if params[0] == "leaderboard":
+		scores = Score.query.group_by(Score.user_id).having(min(Score.value) > 0).order_by(Score.value).all()
+		if scores:
+			best_time = scores.pop(0)
+			return_text = f"*{best_time.timestamp.strftime('%c')}* - {best_time.user.slack_username} - {best_time.orig_input} \U0001F451 \n"
+			for s in scores[0:9]:
+				return_text += f"*{s.timestamp.strftime('%c')}* - {s.user.slack_username} - {s.orig_input}\n"
+			return jsonify(
+				type="section",
+				response_type="ephemeral",
+				text=f"Top 10 Personal Bests are ~ \n\n {return_text}",
+			)
+		else:
+			return jsonify(
+				type="section",
+				response_type="ephemeral",
+				text="No scores found yet. Input your score using `/set score`.",
 			)
 
 	if params[0] == "today":
