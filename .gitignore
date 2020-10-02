@@ -1,3 +1,6 @@
 .vscode/
 .flaskenv/
 config.py/
+__pycache__
+app.db
+*.pyc
