@@ -45,7 +45,7 @@ def set_score():
         params = text_input.split()
     else:
         return jsonify(
-            response_type="ephermal",
+            response_type="ephemeral",
             type="section",
             text="I didn't catch that! Type 'help' for a list of appropriate commands",
         )
@@ -72,7 +72,7 @@ def set_score():
         user = User.query.filter_by(slack_userid=user_id).first()
 
     if params[0] == "score":
-        input_value = text_input.split(" `")
+        input_value = text_input.replace("*","").split(" `")
         try:
             value = arrow.Arrow.strptime(
                 input_value[1], "%H hours %M minutes and %S.%f seconds`"
