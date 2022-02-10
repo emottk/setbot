@@ -45,7 +45,7 @@ def set_score():
         params = text_input.split()
     else:
         return jsonify(
-            response_type="ephermal",
+            response_type="ephemeral",
             type="section",
             text="I didn't catch that! Type 'help' for a list of appropriate commands",
         )
