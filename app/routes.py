@@ -6,7 +6,8 @@ from flask import abort, Flask, jsonify, request
 from sqlalchemy.sql.functions import min
 import arrow
 import random
-
+import pandas as pd
+import matplotlib.pyplot as plt
 
 def is_request_valid(request):
     is_token_valid = request.form["token"] == os.environ["SLACK_VERIFICATION_TOKEN"]
@@ -128,23 +129,26 @@ def set_score():
                 response_type="ephemeral",
                 text="*Oops!* Looks like you didn't tell me who you'd like to compare yourself to. Try `compare_scores` followed by `<slack username>`",
             )
-        compare_username = params[1]
-        compare_user = User.query.filter_by(slack_username=compare_username).first()
-        if not compare_user:
+        username1 = params[1]
+        username2 = params[2]
+        user1 = User.query.filter_by(slack_username=username1).first()
+        user2 = User.query.filter_by(slack_username=username2).first()
+        print(user1, user2)
+        if not (user1 or user2):
             return jsonify(
                 type="section",
                 response_type="ephemeral",
                 text="*Oh no!* Either that's not a valid username, or that user hasn't played yet! Try again.",
             )
-        compare_user_scores = compare_user.set_scores.all()
-        # user_df = pd.read_sql('SELECT * FROM User', db.session.bind)
-        # scores_df = pd.read_sql('SELECT * FROM Score', db.session.bind)
-        # merge_df = pd.merge(df, df1, left_on='id', right_on='user_id')
-        # print(compare_user_scores)
+        user1_scores = user1.set_scores.all()
+        user_df = pd.read_sql('SELECT * FROM User', db.session.bind)
+        scores_df = pd.read_sql('SELECT * FROM Score', db.session.bind)
+        merge_df = pd.merge(user_df, scores_df, left_on='id', right_on='user_id')
+        print(merge_df)
         return jsonify(
             type="section",
             response_type="in_channel",
-            text=f"{compare_user.slack_userid, compare_user.slack_username}",
+            text=f"{user1.slack_userid, user1.slack_username}",
         )
 
     if params[0] == "my_best":
