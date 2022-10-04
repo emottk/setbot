@@ -1,0 +1,17 @@
+[flake8]
+ignore = E501,
+    # split before binary operator
+    W503,
+    # whitespace around colons
+    E203,
+    # too many #### before a comment
+    E266
+
+exclude =
+    .git,
+    venv
+
+max-complexity = 12
+max-line-length=88
+
+select = B,C,E,F,W,T4,B9
