@@ -180,22 +180,57 @@ def command_compare_scores(params, *args, **kwargs):
             text="*Oops!* Looks like you didn't tell me who you'd like to compare yourself to. Try `compare_scores` followed by `<slack username>`",
         )
     compare_username = params[1]
+    try:
+        compare_timeframe = params[2]
+    except IndexError:
+        compare_timeframe = "best"
     compare_user = User.query.filter_by(slack_username=compare_username).first()
+    user = get_user()
     if not compare_user:
         return jsonify(
             type="section",
             response_type="ephemeral",
             text="*Oh no!* Either that's not a valid username, or that user hasn't played yet! Try again.",
         )
-    # compare_user_scores = compare_user.set_scores.all()
-    # user_df = pd.read_sql('SELECT * FROM User', db.session.bind)
-    # scores_df = pd.read_sql('SELECT * FROM Score', db.session.bind)
-    # merge_df = pd.merge(df, df1, left_on='id', right_on='user_id')
-    # print(compare_user_scores)
+
+    if compare_timeframe == "today":
+        todays_datetime = (
+            arrow.now("US/Pacific")
+            .replace(hour=0, minute=0, second=0, microsecond=0)
+            .datetime
+        )
+        their_score = (
+            compare_user.set_scores.filter(Score.timestamp >= todays_datetime)
+            .order_by(Score.value)
+            .first()
+        )
+        user_score = (
+            user.set_scores.filter(Score.timestamp >= todays_datetime)
+            .order_by(Score.value)
+            .first()
+        )
+    elif compare_timeframe == "best":
+        their_score = compare_user.set_scores.order_by(Score.value).first()
+        user_score = user.set_scores.order_by(Score.value).first()
+    else:
+        return jsonify(
+            type="section",
+            response_type="ephemeral",
+            text="*Oops!* That's not a valid timeframe. "
+            + "Try `compare_scores` followed by `<slack username> <best or today>`",
+        )
+
+    their_time = their_score.orig_input if their_score else "No time recorded"
+    user_time = user_score.orig_input if user_score else "No time recorded"
+
+    return_text = (
+        f"*{user.slack_username}:*   {user_time}\n"
+        + f"*{compare_user.slack_username}:*   {their_time}\n"
+    )
     return jsonify(
         type="section",
-        response_type="in_channel",
-        text=f"{compare_user.slack_userid, compare_user.slack_username}",
+        response_type="ephemeral",
+        text=return_text,
     )
 
 

@@ -42,7 +42,7 @@ Commands are issued into Slack with `/set <command> <params>`
 | help           | -                                       | List of commands                                                                                                              |
 | score          | `1 hours 59 minutes and 59.999 seconds` | Records the score, should be the format copied direct from the results page, wrapped in backticks                             |
 | past_scores    | -                                       | Lists all of your own previous scores, in chronological order.                                                                |
-| compare_scores | slack_username                          | Not implemented! Compare your best and/or recent scores to another named used. Just in case you are competitive.              |
+| compare_scores | slack_username, <today|best>            | Compare your best and/or recent scores to another named user. Just in case you are competitive.                               |
 | today          | -                                       | All of the scores for today, ranked by speed.                                                                                 |
 | my_best        | -                                       | Your personal top 5 scores.                                                                                                   |
 | top10          | -                                       | The top 10 scores of all time.                                                                                                |
