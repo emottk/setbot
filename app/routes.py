@@ -208,7 +208,7 @@ def command_compare_scores(params, *args, **kwargs):
             type="section",
             response_type="ephemeral",
             text="*Oops!* That's not a valid timeframe. "
-            + "Try `compare_scores` followed by `<slack username> <best or today>",
+            + "Try `compare_scores` followed by `<slack username> <best or today>`",
         )
 
     their_time = their_score.orig_input if their_score else "No time recorded"
