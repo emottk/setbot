@@ -211,16 +211,12 @@ def command_compare_scores(params, *args, **kwargs):
             + "Try `compare_scores` followed by `<slack username> <best or today>",
         )
 
-    if not their_score or user_score:
-        return jsonify(
-            type="section",
-            response_type="ephemeral",
-            text="*Oops!* One of you didn't have a valid score.",
-        )
+    their_time = their_score.orig_input if their_score else "No time recorded"
+    user_time = user_score.orig_input if user_score else "No time recorded"
 
     return_text = (
-        f"*{user.slack_username}:*   {user_score.orig_input}\n"
-        + f"*{compare_user.slack_username}:*   {their_score.orig_input}\n"
+        f"*{user.slack_username}:*   {user_time}\n"
+        + f"*{compare_user.slack_username}:*   {their_time}\n"
     )
     return jsonify(
         type="section",
