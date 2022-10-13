@@ -47,3 +47,4 @@ Commands are issued into Slack with `/set <command> <params>`
 | my_best        | -                                       | Your personal top 5 scores.                                                                                                   |
 | top10          | -                                       | The top 10 scores of all time.                                                                                                |
 | leaderboard    | -                                       | The top 10 users of all time, ranked by their single best score.                                                              |
+| overview       | slack_username(optional)                | The first, latest, best, and worst times for a given user (or self by default)                                                |

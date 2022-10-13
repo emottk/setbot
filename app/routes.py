@@ -50,6 +50,7 @@ def set_score():
         "my_best",
         "top10",
         "leaderboard",
+        "overview",
     ]
     text_input = request.form["text"]
 
@@ -93,6 +94,9 @@ def set_score():
     if params[0] == "today":
         return command_today(params)
 
+    if params[0] == "overview":
+        return command_overview(params)
+
 
 def command_help(*args, **kwargs):
     return jsonify(
@@ -103,6 +107,10 @@ def command_help(*args, **kwargs):
             + "\n *past_scores*"
             + "\n *compare_scores* [slack username]"
             + "\n *today*"
+            + "\n my_best"
+            + "\n top10"
+            + "\n leaderboard"
+            + "\n overview"
         ),
     )
 
@@ -164,7 +172,8 @@ def command_past_scores(*args, **kwargs):
 
 
 def command_compare_scores(params, *args, **kwargs):
-    if not params[1]:
+
+    if len(params) < 2:
         return jsonify(
             type="section",
             response_type="ephemeral",
@@ -282,7 +291,42 @@ def command_today(*args, **kwargs):
         )
     else:
         return jsonify(
-            type="ephemeral",
-            response_type="in_channel",
+            type="section",
+            response_type="ephemeral",
             text="No scores have been recorded yet today! Input your score using `/set score`.",
         )
+
+
+def command_overview(params, *args, **kwargs):
+    try:
+        target_username = params[1]
+        user = User.query.filter_by(slack_username=target_username).first()
+    except IndexError:
+        user = get_user()
+
+    if not user or user.set_scores.count() < 1:
+        return jsonify(
+            type="section",
+            response_type="ephemeral",
+            text="No scores have been recorded yet for this user.",
+        )
+
+
+    first_time = user.set_scores.order_by(Score.timestamp).first()
+    last_time = user.set_scores.order_by(Score.timestamp.desc()).first()
+    fastest_time = user.set_scores.order_by(Score.value).first()
+    slowest_time = user.set_scores.order_by(Score.value.desc()).first()
+
+    return_text = (
+        f"An overview of {user.slack_username}'s scores\n" +
+        f"\nFirst: *{first_time.timestamp.strftime('%c')}* {first_time.orig_input}"
+        f"\nLatest: *{last_time.timestamp.strftime('%c')}* {last_time.orig_input}"
+        f"\nFastest: *{fastest_time.timestamp.strftime('%c')}* {fastest_time.orig_input}"
+        f"\nSlowest: *{slowest_time.timestamp.strftime('%c')}* {slowest_time.orig_input}"
+    )
+
+    return jsonify(
+        type="section",
+        response_type="ephemeral",
+        text=return_text,
+    )
