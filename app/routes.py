@@ -240,7 +240,7 @@ def command_my_best(*args, **kwargs):
     if scores:
         best_time = scores.pop(0)
         return_text = f"*{best_time.timestamp.strftime('%c')}* - {best_time.orig_input} \U0001F451 \n"
-        for s in scores[1:5]:
+        for s in scores[0:4]:
             return_text += f"*{s.timestamp.strftime('%c')}* - {s.orig_input}\n"
         return jsonify(
             type="section",
@@ -346,15 +346,14 @@ def command_overview(params, *args, **kwargs):
             text="No scores have been recorded yet for this user.",
         )
 
-
     first_time = user.set_scores.order_by(Score.timestamp).first()
     last_time = user.set_scores.order_by(Score.timestamp.desc()).first()
     fastest_time = user.set_scores.order_by(Score.value).first()
     slowest_time = user.set_scores.order_by(Score.value.desc()).first()
 
     return_text = (
-        f"An overview of {user.slack_username}'s scores\n" +
-        f"\nFirst: *{first_time.timestamp.strftime('%c')}* {first_time.orig_input}"
+        f"An overview of {user.slack_username}'s scores\n"
+        + f"\nFirst: *{first_time.timestamp.strftime('%c')}* {first_time.orig_input}"
         f"\nLatest: *{last_time.timestamp.strftime('%c')}* {last_time.orig_input}"
         f"\nFastest: *{fastest_time.timestamp.strftime('%c')}* {fastest_time.orig_input}"
         f"\nSlowest: *{slowest_time.timestamp.strftime('%c')}* {slowest_time.orig_input}"
