@@ -1,7 +1,7 @@
 arrow
 alembic==1.0.11
 Click==7.0
-Flask==1.1.1
+Flask==2.3.2
 Flask-Migrate==2.5.2
 Flask-SQLAlchemy==2.4.0
 itsdangerous==1.1.0
